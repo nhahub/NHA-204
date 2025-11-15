@@ -1,0 +1,43 @@
+
+a,
+span {
+  display: inline-block;
+}
+a {
+  text-decoration: none;
+}
+
+:root {
+  --orange_color: #f58220;
+  --darkBlue_color: #0b3c65;
+  --NAVY_color: #4a90e2;
+  --lightGray_color: #f5f5f5;
+}
+h1{
+    color: var(--darkBlue_color);
+    position: relative;
+}
+h1::after{
+    content: "";
+    width: 250px;
+    margin-top: 10px;
+    border-bottom: #f58220 3px solid ;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translate(-50%,-50%); 
+}
+
+
+ #map{
+    height: 500px;
+ }
+.container div p{
+    color: var(--NAVY_color);
+}
+.container .animate__fadeIn{
+  animation-delay: 500ms;
+}
+picture img {
+  width: 100px;
+}

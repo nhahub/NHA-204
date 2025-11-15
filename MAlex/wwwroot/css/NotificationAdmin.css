@@ -1,0 +1,83 @@
+/* &Glopal styles */
+a,
+span {
+  display: inline-block;
+}
+a {
+  text-decoration: none;
+}
+
+:root {
+  --orange_color: #f58220;
+  --darkBlue_color: #0b3c65;
+  --NAVY_color: #4a90e2;
+  --lightGray_color: #f5f5f5;
+  --main_font: "Pacifico", cursive;
+  --secondary_font: "Righteous", sans-serif;
+  --third_font: "PT Sans Caption", sans-serif;
+}
+h1 {
+  color: var(--darkBlue_color);
+  position: relative;
+  font-family: var(--main_font);
+}
+h1::after {
+  content: "";
+  width: 300px;
+  margin-top: 10px;
+  border-bottom: #f58220 3px solid;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+picture img {
+  width: 100px;
+}
+
+section{
+    background-color: var(--lightGray_color);
+}
+
+.inner h2{
+    background-color: var(--darkBlue_color);
+}
+.msg p{
+border-left: var(--orange_color) 5px solid;
+transition: transform 300ms;
+}
+.msg p:hover{
+    transform: translatex(8px);
+}
+/* & ready section */
+.ready-section{
+    max-height: 415px;
+    overflow-y: auto;
+}
+/* &recent section */
+.recent-section{
+    max-height: 190px;
+    overflow-y: auto;
+}
+/* &form section */
+
+
+form button{
+    border: unset;
+    background-color: var(--orange_color);
+transition: background-color 500ms ;
+}
+form button:hover{
+    background-color: var(--NAVY_color);
+}
+form input,form textarea ,form select{
+    border: rgba(128, 128, 128, 0.438) 1px solid;
+}
+h2{
+    font-family: var(--secondary_font);
+}
+
+/* & footer section */
+footer{
+    background-color: var(--darkBlue_color);
+}

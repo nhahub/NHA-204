@@ -1,0 +1,44 @@
+﻿
+@{
+    ViewData["Title"] = "TicketConfirmation";
+}
+
+
+
+@model Ticket
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/BookTicket.css" />
+}
+
+<section class="d-flex justify-content-center align-items-center flex-column">
+    <div id="ticketResult">
+        <h3>🎟️ Your Ticket is Confirmed!</h3>
+        <p id="summary">
+            Ticket ID: @Model.TicketID<br />
+            @if (Model.Trip != null)
+            {
+                <text>
+                    Route: @Model.Trip.StartStation?.StationName → @Model.Trip.EndStation?.StationName<br />
+                    Distance: @Model.Trip.Distance km<br />
+                    Price: @Model.Trip.TotalPrice EGP<br />
+                </text>
+            }
+            Purchase Date: @Model.PurchaseDate.ToString("MMM dd, yyyy")
+        </p>
+        <div id="qrcode"></div>
+        <a href="@Url.Action("MyTickets", "Ticket")" class="btn btn-primary mt-3">View My Tickets</a>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+    <script>
+        new QRCode(document.getElementById("qrcode"), {
+            text: "Ticket #@Model.TicketID - @(Model.Trip != null ? Model.Trip.StartStation?.StationName + " → " + Model.Trip.EndStation?.StationName : "") - @(Model.Trip?.TotalPrice ?? 0) EGP",
+            width: 150,
+            height: 150
+        });
+    </script>
+}
+

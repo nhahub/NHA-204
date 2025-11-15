@@ -1,0 +1,57 @@
+﻿
+@using MAlex.Models.viewModels
+@model BookTicketViewModel
+
+
+@{
+    ViewData["Title"] = "BookTicket";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/BookTicket.css" />
+}
+
+<section class="d-flex justify-content-center align-items-center flex-column">
+    <h1 class="mt-3">Alexandria Metro – Ticket Booking</h1>
+    <div class="booking-box text-center">
+        <h2>@Model.TicketType</h2>
+        <p>Price: @Model.Price EGP</p>
+
+        <form asp-action="BookTicket" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <!-- Hidden fields -->
+            <input type="hidden" asp-for="TicketType" />
+            <input type="hidden" asp-for="Price" />
+
+            <label asp-for="FromStation">From Station:</label>
+            <select asp-for="FromStation" required>
+                <option value="">Select Start Station</option>
+                @foreach (var station in ViewBag.Stations as List<Station>)
+                {
+                    <option value="@station.StationID">@station.StationName</option>
+                }
+            </select>
+            <span asp-validation-for="FromStation" class="text-danger"></span>
+
+            <label asp-for="ToStation">To Station:</label>
+            <select asp-for="ToStation" required>
+                <option value="">Select End Station</option>
+                @foreach (var station in ViewBag.Stations as List<Station>)
+                {
+                    <option value="@station.StationID">@station.StationName</option>
+                }
+            </select>
+            <span asp-validation-for="ToStation" class="text-danger"></span>
+
+            <label asp-for="PaymentMethod">Payment Method:</label>
+            <select asp-for="PaymentMethod">
+                <option value="Visa">Visa</option>
+                <option value="Wallet">Wallet</option>
+                <option value="Cash">Cash</option>
+            </select>
+
+            <button type="submit">Confirm Booking</button>
+        </form>
+    </div>
+</section>
