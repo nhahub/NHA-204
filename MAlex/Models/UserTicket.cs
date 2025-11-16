@@ -12,7 +12,7 @@ namespace MetroApp.Models
         [Key, Column(Order = 1)]
         public int TicketID { get; set; }
 
-        // Navigation properties
+        
         [ForeignKey("UserID")]
         public virtual User User { get; set; } = null!;
 

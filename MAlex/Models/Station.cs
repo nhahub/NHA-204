@@ -23,9 +23,9 @@ namespace MAlex.Models
 
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "Active"; // Active, Inactive, Maintenance
+        public string Status { get; set; } = "Active";
 
-        // Navigation properties for trips
+      
         public virtual ICollection<Trip> StartTrips { get; set; } = new List<Trip>();
         public virtual ICollection<Trip> EndTrips { get; set; } = new List<Trip>();
     }

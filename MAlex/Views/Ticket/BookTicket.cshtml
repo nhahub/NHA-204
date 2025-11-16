@@ -1,7 +1,5 @@
-﻿
-@using MAlex.Models.viewModels
+﻿@using MAlex.Models.viewModels
 @model BookTicketViewModel
-
 
 @{
     ViewData["Title"] = "BookTicket";
@@ -13,14 +11,18 @@
 
 <section class="d-flex justify-content-center align-items-center flex-column">
     <h1 class="mt-3">Alexandria Metro – Ticket Booking</h1>
+
     <div class="booking-box text-center">
         <h2>@Model.TicketType</h2>
+
+        <!-- Display only -->
         <p>Price: @Model.Price EGP</p>
 
         <form asp-action="BookTicket" method="post">
+
             <div asp-validation-summary="All" class="text-danger"></div>
 
-            <!-- Hidden fields -->
+            <!-- Hidden fields (numeric price only) -->
             <input type="hidden" asp-for="TicketType" />
             <input type="hidden" asp-for="Price" />
 

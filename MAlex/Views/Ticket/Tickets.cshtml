@@ -1,0 +1,121 @@
+﻿
+@model IEnumerable<object>
+
+@{
+    ViewData["Title"] = "Tickets";
+}
+
+
+<style>
+    body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #003049, #f77f00);
+        color: #fff;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    h1 {
+        margin-top: 70px;
+        font-size: 2.5rem;
+        text-align: center;
+        letter-spacing: 1px;
+        color: #fff;
+        text-transform: uppercase;
+        font-weight: 700;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        background: rgba(0, 0, 0, 0.15);
+        padding: 15px 40px;
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .tickets-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 25px;
+        width: 90%;
+        max-width: 1100px;
+        margin: 60px auto;
+    }
+
+    .ticket-card {
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 20px;
+        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        padding: 25px 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        backdrop-filter: blur(8px);
+    }
+
+        .ticket-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 35px rgba(247, 127, 0, 0.5);
+        }
+
+        .ticket-card h2 {
+            color: #f77f00;
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+        }
+
+        .ticket-card p {
+            font-size: 1rem;
+            color: black;
+            margin-bottom: 15px;
+        }
+
+    .ticket-price {
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: #fff;
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        background: #f77f00;
+        color: #fff;
+        border: none;
+        border-radius: 25px;
+        padding: 10px 25px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+        .btn:hover {
+            background: #ff8e1f;
+            transform: scale(1.05);
+        }
+</style>
+
+<h1>Available Metro Tickets</h1>
+
+<div class="tickets-container">
+    @foreach (var ticket in Model)
+    {
+        var type = ticket.GetType().GetProperty("Type")?.GetValue(ticket)?.ToString();
+        var price = ticket.GetType().GetProperty("Price")?.GetValue(ticket);
+        var description = ticket.GetType().GetProperty("Description")?.GetValue(ticket)?.ToString();
+
+        <div class="ticket-card">
+            <h2>@type</h2>
+            <p>@description</p>
+            <div class="ticket-price">@price EGP</div>
+            <a href="@Url.Action("BookTicket", "Ticket", new { type = type, price = price })" class="btn">Book Now</a>
+        </div>
+    }
+</div>
+
+
+
+
+
+

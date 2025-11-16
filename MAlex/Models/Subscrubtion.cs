@@ -11,7 +11,7 @@ namespace MAlex.Models
 
         [Required]
         [StringLength(50)]
-        public string Type { get; set; } = string.Empty; // Daily, Weekly, Monthly, Yearly
+        public string Type { get; set; } = string.Empty; 
 
         [Required]
         [Column(TypeName = "decimal(10,2)")]
@@ -27,13 +27,11 @@ namespace MAlex.Models
 
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "Active"; // Active, Expired, Cancelled
+        public string Status { get; set; } = "Active"; 
 
-        // Foreign key
         [Required]
         public string UserID { get; set; } = string.Empty;
 
-        // Navigation property
         [ForeignKey("UserID")]
         public virtual User User { get; set; } = null!;
     }

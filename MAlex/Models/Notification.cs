@@ -23,7 +23,6 @@ namespace MAlex.Models
 
         public NotificationType Type { get; set; } = NotificationType.General;
 
-        // Foreign key for admin who created it
         public string? CreatedByUserId { get; set; }
     }
 

@@ -1,10 +1,12 @@
 ﻿using MAlex.Models;
 using MAlex.Models.viewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace MAlex.Controllers
 {
@@ -12,62 +14,123 @@ namespace MAlex.Controllers
     {
         private readonly AppDbContext _context;
 
+       
         public TicketController(AppDbContext context)
         {
             _context = context;
         }
 
-        // Show ticket types
-        public IActionResult Tickets()
+
+        public async Task<IActionResult> Tickets()
         {
-            var ticketTypes = new List<object>
-            {
-                new { Type = "Single Ride", Price = 15, Description = "Valid for one trip between any two stations." },
-                new { Type = "Daily Pass", Price = 40, Description = "Unlimited rides for 24 hours." },
-                new { Type = "Weekly Pass", Price = 150, Description = "Unlimited rides for 7 days." },
-                new { Type = "Monthly Pass", Price = 500, Description = "Unlimited rides for 30 days." }
-            };
+            var ticketTypes = await _context.TicketTypes
+                .Select(tt => new TicketTypeViewModel
+                {
+                    Type = tt.Type,
+                    Price = (int)tt.Price, 
+                    Description = tt.Description
+                })
+                .ToListAsync();
 
             return View(ticketTypes);
         }
 
-        // GET: Book ticket page
+
+
+
+        // ============================
+        //    My Tickets
+
+        // ============================
+        //--------------------------------------------------------------------------------it depend on User id in the cookie
+        //public async Task<IActionResult> MyTrips()
+        //{
+        //    var user = await _userManager.GetUserAsync(User);
+
+        //    if (user == null) return Challenge();
+
+        //    var trips = await _context.Trips
+        //        .Where(trip => trip.Tickets
+        //            .Any(ticket => ticket.UserTickets
+        //                .Any(ut => ut.UserID == user.Id)))
+        //        .Include(trip => trip.StartStation)
+        //        .Include(trip => trip.EndStation)
+        //        .Include(trip => trip.Tickets)
+        //            .ThenInclude(t => t.UserTickets)
+        //        .OrderByDescending(trip => trip.TripID)
+        //        .ToListAsync();
+
+
+        //    return View(trips);
+        //}
+
+        // ============================
+        //     SHOW ALL TICKET TYPES
+        // ============================
+
+
+        // ============================
+        //         BOOK TICKET (GET)
+        // ============================
         [HttpGet]
-        public async Task<IActionResult> BookTicket(string? type = null, string? price = null, int? startStationId = null, int? endStationId = null)
+        public async Task<IActionResult> BookTicket(string? type = null, int? price = null, int? startStationId = null, int? endStationId = null)
         {
+            if (string.IsNullOrEmpty(type) || price == null)
+            {
+                return RedirectToAction("Tickets");
+            }
+
+            var ticket = await _context.TicketTypes
+                .Where(tt => tt.Type == type)
+                .Select(tt => new TicketTypeViewModel
+                {
+                    Type = tt.Type,
+                    Price = (int)tt.Price,
+                    Description = tt.Description
+                })
+                .FirstOrDefaultAsync();
+
             var viewModel = new BookTicketViewModel
             {
-                TicketType = type,
-                Price = string.IsNullOrEmpty(price) ? 0 : decimal.Parse(price.Replace(" EGP", ""))
+                TicketType = ticket?.Type,
+                Price = ticket?.Price ?? 0,
+                FromStation = startStationId?.ToString(),
+                ToStation = endStationId?.ToString()
             };
 
-            if (startStationId.HasValue) viewModel.FromStation = startStationId.ToString();
-            if (endStationId.HasValue) viewModel.ToStation = endStationId.ToString();
+            ViewBag.Stations = await _context.Stations
+                .Where(s => s.Status == "Active")
+                .ToListAsync();
 
-            ViewBag.Stations = await _context.Stations.Where(s => s.Status == "Active").ToListAsync();
             return View(viewModel);
         }
 
-        // POST: Book ticket
+
+        // ============================
+        //         BOOK TICKET (POST)
+        // ============================
         [HttpPost]
         public async Task<IActionResult> BookTicket(BookTicketViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Stations = await _context.Stations.Where(s => s.Status == "Active").ToListAsync();
+                ViewBag.Stations = await _context.Stations
+                    .Where(s => s.Status == "Active")
+                    .ToListAsync();
                 return View(model);
             }
 
-            // Parse station IDs
             if (!int.TryParse(model.FromStation, out int startStationId) ||
                 !int.TryParse(model.ToStation, out int endStationId))
             {
                 ModelState.AddModelError("", "Please select valid start and end stations.");
-                ViewBag.Stations = await _context.Stations.Where(s => s.Status == "Active").ToListAsync();
+                ViewBag.Stations = await _context.Stations
+                    .Where(s => s.Status == "Active")
+                    .ToListAsync();
                 return View(model);
             }
 
-            // Find or create trip
+            // Check if trip exists
             var trip = await _context.Trips
                 .Include(t => t.StartStation)
                 .Include(t => t.EndStation)
@@ -84,12 +147,20 @@ namespace MAlex.Controllers
                     EndStationID = endStationId,
                     StartStation = startStation!,
                     EndStation = endStation!,
-                    Distance = 10.0m, // You can calculate real distance here
+                    Distance = 10.0m,
                     Type = model.TicketType ?? "Regular"
                 };
 
-                // Calculate price automatically
-                trip.CalculatePrice();
+                if (model.Price <= 0)
+                {
+                    ModelState.AddModelError("", "Invalid ticket price.");
+                    ViewBag.Stations = await _context.Stations
+                        .Where(s => s.Status == "Active")
+                        .ToListAsync();
+                    return View(model);
+                }
+
+                trip.TotalPrice = model.Price;
 
                 _context.Trips.Add(trip);
                 await _context.SaveChangesAsync();
@@ -106,10 +177,13 @@ namespace MAlex.Controllers
             await _context.SaveChangesAsync();
 
             TempData["TicketId"] = ticket.TicketID;
-            return RedirectToAction(nameof(TicketConfirmation), new { id = ticket.TicketID });
+            return RedirectToAction(nameof(TicketsManagement), new { id = ticket.TicketID });
         }
 
-        // Ticket confirmation page
+
+        // ============================
+        //     TICKET CONFIRMATION
+        // ============================
         public async Task<IActionResult> TicketConfirmation(int id)
         {
             var ticket = await _context.Tickets
@@ -124,7 +198,9 @@ namespace MAlex.Controllers
             return View(ticket);
         }
 
-        // Tickets management page
+        // ============================
+        //     ADMIN TICKET MANAGEMENT
+        // ============================
         public async Task<IActionResult> TicketsManagement()
         {
             var tickets = await _context.Tickets
@@ -137,5 +213,6 @@ namespace MAlex.Controllers
 
             return View(tickets);
         }
+
     }
 }

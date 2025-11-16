@@ -2,6 +2,7 @@
 using MetroApp.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace MAlex
 {
@@ -18,19 +19,24 @@ namespace MAlex
         public DbSet<Subscrubtion> Subscriptions { get; set; }
         public DbSet<Trip> Trips { get; set; }
         public DbSet<UserTicket> UserTickets { get; set; }
+        public DbSet<TicketType> TicketTypes { get; set; } = null!;
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-
-            // Configure Trip
+            builder.Entity<TicketType>().HasData(
+                  new TicketType { Id = 1, Type = "Single Ride", Price = 15, Description = "Valid for one trip between any two stations." },
+                  new TicketType { Id = 2, Type = "Daily Pass", Price = 40, Description = "Unlimited rides for 24 hours." },
+                  new TicketType { Id = 3, Type = "Weekly Pass", Price = 100, Description = "Unlimited rides for 7 days." }
+             );
+         
             builder.Entity<Trip>(entity =>
             {
                 entity.HasKey(e => e.TripID);
                 entity.Property(e => e.Distance).HasPrecision(6, 2);
                 entity.Property(e => e.TotalPrice).HasPrecision(10, 2);
 
-                // Configure relationships with Station
                 entity.HasOne(t => t.StartStation)
                       .WithMany(s => s.StartTrips)
                       .HasForeignKey(t => t.StartStationID)
@@ -45,7 +51,6 @@ namespace MAlex
                 entity.HasIndex(e => e.EndStationID);
             });
 
-            // Configure Ticket
             builder.Entity<Ticket>(entity =>
             {
               
@@ -53,7 +58,7 @@ namespace MAlex
                 entity.HasIndex(e => e.TripID);
             });
 
-            // Configure UserTicket
+            
             builder.Entity<UserTicket>(entity =>
             {
                 entity.HasKey(e => new { e.UserID, e.TicketID });
@@ -69,7 +74,7 @@ namespace MAlex
                 entity.Property(e => e.Price).HasPrecision(10, 2);
             });
 
-            // Configure Station
+           
             builder.Entity<Station>(entity =>
             {
                 entity.HasKey(e => e.StationID);

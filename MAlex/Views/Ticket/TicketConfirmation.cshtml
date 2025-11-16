@@ -1,21 +1,69 @@
-﻿
+﻿@model Ticket
 @{
-    ViewData["Title"] = "TicketConfirmation";
+    ViewData["Title"] = "Ticket Confirmation";
 }
-
-
-
-@model Ticket
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/BookTicket.css" />
+    <style>
+    
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        section {
+            margin-top: 180px; 
+        }
+
+        #ticketResult {
+            background: rgba(255, 255, 255, 0.92);
+            padding: 30px;
+            border-radius: 16px;
+            text-align: center;
+            width: 360px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(4px);
+        }
+
+        #ticketResult h3 {
+            color: #003049;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        #summary {
+            color: #333;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        #qrcode {
+            margin-top: 15px;
+        }
+
+        .btn-primary {
+            background-color: #003049;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #002437;
+        }
+    </style>
 }
+
 
 <section class="d-flex justify-content-center align-items-center flex-column">
     <div id="ticketResult">
         <h3>🎟️ Your Ticket is Confirmed!</h3>
+
         <p id="summary">
             Ticket ID: @Model.TicketID<br />
+
             @if (Model.Trip != null)
             {
                 <text>
@@ -24,21 +72,25 @@
                     Price: @Model.Trip.TotalPrice EGP<br />
                 </text>
             }
+
             Purchase Date: @Model.PurchaseDate.ToString("MMM dd, yyyy")
         </p>
+
         <div id="qrcode"></div>
-        <a href="@Url.Action("MyTickets", "Ticket")" class="btn btn-primary mt-3">View My Tickets</a>
+
+        <a href="@Url.Action("MyTrips", "Ticket")" class="btn btn-primary mt-3">View My Tickets</a>
     </div>
 </section>
 
+
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
     <script>
         new QRCode(document.getElementById("qrcode"), {
-            text: "Ticket #@Model.TicketID - @(Model.Trip != null ? Model.Trip.StartStation?.StationName + " → " + Model.Trip.EndStation?.StationName : "") - @(Model.Trip?.TotalPrice ?? 0) EGP",
+            text: "Ticket #@Model.TicketID - @(Model.Trip != null ? Model.Trip.StartStation?.StationName  + Model.Trip.EndStation?.StationName:"") - @(Model.Trip?.TotalPrice ?? 0) EGP",
             width: 150,
             height: 150
         });
     </script>
 }
-

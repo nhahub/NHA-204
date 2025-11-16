@@ -19,16 +19,16 @@ namespace MAlex.Models
         [Column(TypeName = "decimal(10,2)")]
         public decimal TotalPrice { get; set; }
 
-        public string Type { get; set; } = "Regular";  // Regular, VIP, etc.
+        public string Type { get; set; } = "Regular";  
 
-        // Foreign Keys
+        
         [Required]
         public int StartStationID { get; set; }
 
         [Required]
         public int EndStationID { get; set; }
 
-        // Navigation Properties
+       
         [ForeignKey("StartStationID")]
         public virtual Station StartStation { get; set; } = null!;
 
@@ -38,18 +38,7 @@ namespace MAlex.Models
         public virtual ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
 
 
-        public void CalculatePrice()
-        {
-            decimal rate = Type switch
-            {
-                "Regular" => 5m,  
-                "VIP" => 8m,      
-                _ => 5m
-            };
-
-            TotalPrice = Distance * rate;
-        }
-
+       
       
         public override string ToString()
         {

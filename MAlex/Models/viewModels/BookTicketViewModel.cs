@@ -8,7 +8,7 @@ namespace MAlex.Models.viewModels
         public string? TicketType { get; set; } = string.Empty;
 
         [Required]
-        public decimal Price { get; set; }
+        public int Price { get; set; }
 
         [Display(Name = "Payment Method")]
         public string PaymentMethod { get; set; } = "Cash";
