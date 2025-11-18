@@ -1,0 +1,48 @@
+﻿@model IEnumerable<MAlex.Models.Trip>
+
+@{
+    ViewData["Title"] = "My Trips";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<div class="container mt-5">
+
+    <h2 class="text-center mb-4">My Trips</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info text-center">
+            You have no trips yet.
+        </div>
+    }
+    else
+    {
+        <table class="table table-striped table-bordered shadow">
+            <thead class="table-dark">
+                <tr>
+                    <th>Trip ID</th>
+                    <th>Start Station</th>
+                    <th>End Station</th>
+                    <th>Distance (KM)</th>
+                    <th>Trip Type</th>
+                    <th>Total Price</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var trip in Model)
+                {
+                    <tr>
+                        <td>@trip.TripID</td>
+                        <td>@trip.StartStation?.StationName</td>
+                        <td>@trip.EndStation?.StationName</td>
+                        <td>@trip.Distance</td>
+                        <td>@trip.Type</td>
+                        <td>@trip.TotalPrice EGP</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

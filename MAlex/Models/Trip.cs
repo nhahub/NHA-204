@@ -42,7 +42,7 @@ namespace MAlex.Models
       
         public override string ToString()
         {
-            return $"{StartStation?.StationName} → {EndStation?.StationName} | {Type} | {TotalPrice} EGP";
+            return $"{StartStation?.StationName} → {EndStation?.StationName}   {Type} | {TotalPrice} EGP";
         }
     }
 }

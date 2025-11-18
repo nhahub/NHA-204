@@ -1,23 +1,29 @@
-﻿using MAlex.Models;
+﻿using MAlex.Migrations;
+using MAlex.Models;
 using MAlex.Models.viewModels;
+using MetroApp.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace MAlex.Controllers
 {
+    [Authorize]
     public class TicketController : Controller
     {
         private readonly AppDbContext _context;
 
-       
-        public TicketController(AppDbContext context)
+       private readonly UserManager<User> _userManager ;
+        public TicketController(AppDbContext context , UserManager<User> userManager)
         {
             _context = context;
+            _userManager = userManager; 
         }
 
 
@@ -43,30 +49,27 @@ namespace MAlex.Controllers
 
         // ============================
         //--------------------------------------------------------------------------------it depend on User id in the cookie
-        //public async Task<IActionResult> MyTrips()
-        //{
-        //    var user = await _userManager.GetUserAsync(User);
+        public async Task<IActionResult> MyTrips()
+        {
+            string userId = _userManager.GetUserId(User);
 
-        //    if (user == null) return Challenge();
+            if (userId == null) return Challenge();
 
-        //    var trips = await _context.Trips
-        //        .Where(trip => trip.Tickets
-        //            .Any(ticket => ticket.UserTickets
-        //                .Any(ut => ut.UserID == user.Id)))
-        //        .Include(trip => trip.StartStation)
-        //        .Include(trip => trip.EndStation)
-        //        .Include(trip => trip.Tickets)
-        //            .ThenInclude(t => t.UserTickets)
-        //        .OrderByDescending(trip => trip.TripID)
-        //        .ToListAsync();
+            var trips = await _context.Trips
+                .Where(trip => trip.Tickets
+                    .Any(ticket => ticket.UserTickets
+                        .Any(ut => ut.UserID == userId)))
+                .Include(trip => trip.StartStation)
+                .Include(trip => trip.EndStation)
+                .Include(trip => trip.Tickets)
+                    .ThenInclude(t => t.UserTickets)
+                .OrderByDescending(trip => trip.TripID)
+                .ToListAsync();
+
+            return View(trips);
+        }
 
 
-        //    return View(trips);
-        //}
-
-        // ============================
-        //     SHOW ALL TICKET TYPES
-        // ============================
 
 
         // ============================
@@ -112,6 +115,11 @@ namespace MAlex.Controllers
         [HttpPost]
         public async Task<IActionResult> BookTicket(BookTicketViewModel model)
         {
+
+
+            var user = await _userManager.GetUserAsync(User);
+
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Stations = await _context.Stations
@@ -176,24 +184,48 @@ namespace MAlex.Controllers
             _context.Tickets.Add(ticket);
             await _context.SaveChangesAsync();
 
+            var userticket = new UserTicket
+            {
+                UserID = user.Id,
+                TicketID = ticket.TicketID
+            };
+
+            _context.UserTickets.Add(userticket);
+            await _context.SaveChangesAsync();
+
+
             TempData["TicketId"] = ticket.TicketID;
-            return RedirectToAction(nameof(TicketsManagement), new { id = ticket.TicketID });
+            return RedirectToAction(nameof(TicketConfirmation), new { id = ticket.TicketID });
         }
 
 
         // ============================
         //     TICKET CONFIRMATION
         // ============================
+
+
+        [Authorize]
         public async Task<IActionResult> TicketConfirmation(int id)
         {
-            var ticket = await _context.Tickets
-                .Include(t => t.Trip)
-                    .ThenInclude(tr => tr.StartStation)
-                .Include(t => t.Trip)
-                    .ThenInclude(tr => tr.EndStation)
-                .FirstOrDefaultAsync(t => t.TicketID == id);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+           
+            var userOwnsTicket = await _context.UserTickets
+                .AnyAsync(ut => ut.UserID == userId && ut.TicketID == id);
 
-            if (ticket == null) return NotFound();
+            if (!userOwnsTicket)
+                return Unauthorized();
+
+            var ticket = await _context.Tickets
+            .Include(t => t.Trip)
+                .ThenInclude(tr => tr.StartStation)
+            .Include(t => t.Trip)
+                .ThenInclude(tr => tr.EndStation)
+            .FirstOrDefaultAsync(t => t.TicketID == id);
+
+
+
+                if (ticket == null)
+                return Unauthorized();
 
             return View(ticket);
         }

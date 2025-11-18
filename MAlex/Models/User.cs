@@ -14,7 +14,7 @@ namespace MetroApp.Models
         [StringLength(20)]
         public string? Role { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.Now; 
 public virtual ICollection<Subscrubtion> Subscriptions { get; set; } = new List<Subscrubtion>();
         public virtual ICollection<UserTicket> UserTickets { get; set; } = new List<UserTicket>();
     }
