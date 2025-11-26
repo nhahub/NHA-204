@@ -8,11 +8,16 @@ namespace MetroApp.Models
     {
        
 
+
         [StringLength(20)]
         public string? Phone { get; set; }
 
         [StringLength(20)]
         public string? Role { get; set; }
+
+        public string? EmailConfirmationCode { get; set; }
+        public DateTime? EmailConfirmationCodeExpiry { get; set; }
+
 
         public DateTime CreatedAt { get; set; } = DateTime.Now; 
 public virtual ICollection<Subscrubtion> Subscriptions { get; set; } = new List<Subscrubtion>();

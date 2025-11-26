@@ -51,5 +51,14 @@ namespace MAlex.Controllers
             return View("AddRole", roleViewModel);
 
         }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Roles()
+        {
+            var roles = roleManager.Roles.ToList();
+            return View(roles);
+        }
+
     }
 }

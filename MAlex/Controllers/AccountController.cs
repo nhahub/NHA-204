@@ -1,193 +1,371 @@
 ﻿using MAlex.Models.viewModels;
 using MetroApp.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading.Tasks;
-
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MAlex.Controllers
 {
+    
     public class AccountController : Controller
     {
         private readonly UserManager<User> userManager;
         private readonly SignInManager<User> signInManager;
-        private readonly AppDbContext context; 
-      
-        public AccountController(UserManager<User> userManager, SignInManager<User> signInManager , AppDbContext context )
+        private readonly AppDbContext context;
+        private readonly RoleManager<IdentityRole> roleManager;
+        private readonly IEmailSender emailSender;
+
+        public AccountController(
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            AppDbContext context,
+            IEmailSender emailSender , RoleManager<IdentityRole> roleManager)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
-            this.context = context; 
-          
+            this.context = context;
+            this.emailSender = emailSender;
+            this.roleManager = roleManager; 
         }
+
+        // ================================
+        // REGISTER
+        // ================================
+
 
         [HttpGet]
         public IActionResult Register()
         {
-
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel userViewModel)
         {
+            if (!ModelState.IsValid)
+                return View(userViewModel);
 
-            if (ModelState.IsValid)
+        
+            User user = new User
             {
-                //Map
-                User user = new User();
-                user.UserName = userViewModel.Username;
-                user.PasswordHash = userViewModel.Password;
+                UserName = userViewModel.Username,
+                Email = userViewModel.Email
+            };
 
+            // Create User
+            IdentityResult result = await userManager.CreateAsync(user, userViewModel.Password);
 
-                //save db
-                IdentityResult result = await userManager.CreateAsync(user, userViewModel.Password);
-
-
-                if (result.Succeeded)
+            if (result.Succeeded)
+            {
+                // Add Visitor role
+                if (!await userManager.IsInRoleAsync(user, "Visitor"))
                 {
-                    //here i want to assign role to user
-                    if (!await userManager.IsInRoleAsync(user, "Visitor"))
-                    {
-                        await userManager.AddToRoleAsync(user, "Visitor");
-                    }
-
-                    //cookie 
-                    await signInManager.SignInAsync(user, false);
-                    Claim Idclaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-                    string Id = Idclaim.Value;
-                    return RedirectToAction("Index", "Home");
+                    await userManager.AddToRoleAsync(user, "Visitor");
                 }
 
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
+
+                var random = new Random();
+                user.EmailConfirmationCode = random.Next(100000, 999999).ToString(); 
+
+                user.EmailConfirmationCodeExpiry = DateTime.UtcNow.AddMinutes(15);
+
+                await userManager.UpdateAsync(user);
 
              
+               
+                await emailSender.SendEmailAsync(
+                    user.Email,
+                    "Confirm your email",
+                    $"Your Comfirmation code {user.EmailConfirmationCode}"
+                );
 
+                return View("RegistrationSuccessful");
             }
+
+          
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError("", error.Description);
+            }
+
             return View("Register", userViewModel);
         }
 
-        public async Task<IActionResult> Logout() {
-            await signInManager.SignOutAsync();
-            return RedirectToAction("Login");
+
+
+
+
+        [HttpGet]
+        public IActionResult ConfirmCode()
+        {
+            return View();
+        }
+        [HttpPost]
+
+        public async Task<IActionResult> ConfirmCode(ConfirmCodeViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+                
+            }
+
+            var user = await userManager.FindByNameAsync(model.Username);
+            if (user == null)
+            {
+                return View(model);
+                
+            }
+
+            if (user.EmailConfirmationCode == model.Code && user.EmailConfirmationCodeExpiry > DateTime.UtcNow) {
+
+                user.EmailConfirmed = true; 
+                user.EmailConfirmationCode = null;
+                user.EmailConfirmationCodeExpiry = null;
+                await
+                    userManager.UpdateAsync(user);
+                return View("ConfirmEmail");
+
+
+            }
+            ModelState.AddModelError("", "Invalid or Ex code");
+            return View(model);
+
         }
 
+
+
+
+
+
+        // ================================
+        // CONFIRM EMAIL
+        // ================================
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (userId == null || token == null)
+                return RedirectToAction("Index", "Home");
+
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound();
+
+            var result = await userManager.ConfirmEmailAsync(user, token);
+
+            if (result.Succeeded)
+                return View("ConfirmEmail");
+
+            return View("Error");
+        }
+
+
+        // ================================
+        // LOGIN
+        // ================================
         [HttpGet]
         public IActionResult Login()
         {
             return View("Login");
-
         }
-
 
         [HttpPost]
-
-        public async Task<IActionResult> SaveLogin(LoginUserViewModel UserViewMode)
+        public async Task<IActionResult> SaveLogin(LoginUserViewModel UserViewModel)
         {
-            if (ModelState.IsValid) {
-                // check if user exsist
-                User AppUser = await userManager.FindByNameAsync(UserViewMode.Username);
-                if (AppUser != null) {
-                    bool Found = await userManager.CheckPasswordAsync(AppUser, UserViewMode.Password);
-                    if (Found) {
-                        //create cookie
-                        await signInManager.SignInAsync(AppUser, UserViewMode.RememberMe);
-                        return RedirectToAction("Index", "Home");
-                    }
-                }
+            if (!ModelState.IsValid)
+                return View("Login", UserViewModel);
+
+           
+            User AppUser = await userManager.FindByNameAsync(UserViewModel.Username);
+
+            if (AppUser == null)
+            {
                 ModelState.AddModelError("", "Invalid username or password");
-
+                return View("Login", UserViewModel);
             }
-            return View("Login", UserViewMode);
 
+       
+            if (!await userManager.IsEmailConfirmedAsync(AppUser))
+            {
+                ModelState.AddModelError("", "Please confirm your email first.");
+                return View("Login", UserViewModel);
+            }
+
+           
+            bool validPassword = await userManager.CheckPasswordAsync(AppUser, UserViewModel.Password);
+
+
+
+            if (validPassword)
+            {
+         
+                await signInManager.SignInAsync(AppUser, UserViewModel.RememberMe);
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            ModelState.AddModelError("", "Invalid username or password");
+            return View("Login", UserViewModel);
         }
 
+
+        // ================================
+        // LOGOUT
+        // ================================
+        public async Task<IActionResult> Logout()
+        {
+            await signInManager.SignOutAsync();
+            return RedirectToAction("Login");
+        }
+
+
+        // ================================
+        // PROFILE
+        // ================================
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
+
             var user = await userManager.GetUserAsync(User);
+            var roles = await userManager.GetRolesAsync(user);
+
+            ViewBag.Roles = roles;
+
+
+
             return View("Profile", user);
         }
 
         [HttpGet]
-        public async Task<IActionResult> UpdateProfile()
+        public IActionResult UpdateProfile()
         {
-            
             return View("UpdateProfile");
         }
 
-
         [HttpPost]
-
         public async Task<IActionResult> UpdateProfile(ProfileUserViewModel profileViewModel)
         {
             if (ModelState.IsValid)
             {
                 User user = await userManager.GetUserAsync(User);
+
                 if (user != null)
                 {
                     user.UserName = profileViewModel.Username;
                     user.Email = profileViewModel.Email;
                     user.PhoneNumber = profileViewModel.PhoneNumber;
+
                     IdentityResult result = await userManager.UpdateAsync(user);
 
-
                     if (result.Succeeded)
-                    {
-
                         return RedirectToAction("Index", "Home");
-                    }
-
 
                     foreach (var error in result.Errors)
-                    {
                         ModelState.AddModelError("", error.Description);
-                    }
                 }
             }
+
             return View("Profile", profileViewModel);
-
-
         }
 
-        public async Task<IActionResult> CreateAdmin()
+
+       
+
+        [HttpGet]
+        public async Task<IActionResult> ForgetPassword() { 
+            
+            return View();
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> ForgetPassword(ForgetPasswordViewModel model)
         {
-            
-            var existingAdmin = await userManager.FindByEmailAsync("admin2@example.com");
-            if (existingAdmin != null)
+
+            if (!ModelState.IsValid)
             {
-                return Content("Admin already exists");
+                return View(model);
             }
 
-          
-            var adminUser = new User
-            {
-                UserName = "admin2",
-                Email = "admin2@example.com"
-            };
+           var existEmail  = await userManager.FindByEmailAsync(model.Email);
 
-            var result = await userManager.CreateAsync(adminUser, "AdminPass123!"); 
-            if (result.Succeeded)
-            {
-              
-                if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
-                {
-                    await userManager.AddToRoleAsync(adminUser, "Admin");
-                }
+            if (existEmail == null)
+                return RedirectToAction("ForgetPasswordConfirmation");
 
-                return Content("New admin created successfully!");
-            }
 
-            
-            return Content(string.Join(", ", result.Errors.Select(e => e.Description)));
+            var code = await userManager.GenerateTwoFactorTokenAsync(existEmail, TokenOptions.DefaultEmailProvider);
+
+
+
+            await emailSender.SendEmailAsync(
+               existEmail.Email,
+                "Reset your Password",
+               $"code {code}"
+               ); 
+
+
+
+            // later 
+
+
+            return View("ResetpasswordWithCode", new ResetPassViewModel{ Email  = existEmail.Email }); 
+
+
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ResetpasswordWithCode(string email)
+        {
+
+            return View(new ResetPassViewModel{ Email = email });
         }
 
 
+        [HttpPost]
+        public async Task<IActionResult> ResetpasswordWithCode(ResetPassViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+            var user = await userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+                return RedirectToAction("ResetPasswordConformation");
 
+            var isCodeValid = await userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider, model.Code);
+
+            if (!isCodeValid)
+            {
+                ModelState.AddModelError("", "Invalid or Expired Code ");
+                return View(model);
+            }
+
+            var resetToken   =await  userManager.GeneratePasswordResetTokenAsync(user);
+
+            var result = await
+                userManager.ResetPasswordAsync(
+                        user,
+                        resetToken,
+                        model.NewPassword
+                    );
+
+            if (result.Succeeded) {
+                return RedirectToAction("ResetPasswordConformation");
+            }
+
+            foreach (var item in result.Errors) {
+                ModelState.AddModelError("", item.Description); 
+            }
+
+            return View(model);
+
+
+
+        }
 
     }
 }

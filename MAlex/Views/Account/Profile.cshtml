@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="~/css/profile.css" />
 }
 
-<section class="vh-100">
+<section class="vh-150">
     <div class="container">
         <picture class="position-absolute top-0 start-0 ms-5">
             <img src="~/images/logo.jpg" class="rounded-circle" alt="" />
@@ -28,38 +28,54 @@
             </li>
         </ul>
 
-        <div class="row shadow p-3 mt-4 rounded main bg-white animate__animated animate__fadeIn">
-            <div class="col-4">
+        <div class="row shadow p-3 mt-3 rounded main bg-white animate__animated animate__fadeIn">
+            <div class="col-6">
                 <div class="inner1 shadow rounded-4 p-3 d-flex justify-content-center align-items-center flex-column">
                     <img class="rounded-circle bg-white" src="~/images/testimonial-2.jpg" alt="User Photo" />
                     <div class="personal_info text-white text-center">
                         <p>@(Model.UserName ?? Model.Email)</p>
                         <span>@Model.Email</span>
                     </div>
-                    <div class="edit_btn mt-2">
-                        <a asp-controller="Account" asp-action="UpdateProfile" class="text-white p-2">Edit Profile</a>
-
-                            <i class="fa-solid fa-pen-to-square"></i>Edit your Profile
-                        </a>
-                    </div>
+                    <a asp-controller="Account" asp-action="UpdateProfile" class="text-bg-dark p-2">Edit Profile</a>
+                    
                 </div>
             </div>
 
-            <div class="card1 col-8">
+            <div class="card1 col-4">
                 <div class="welcome">
                     <p class="fs-3 fw-bold"><span>Welcome !</span> @(Model.UserName ?? Model.Email)</p>
                 </div>
 
                 <div class="inner shadow p-3 rounded-5" id="profileSection">
-                    <h2 class="fs-4 ms-3">
+                    <h2 class="fs-10 ms-3">
                         <i class="fa-solid fa-note-sticky fs-5"></i> Personal Information.
                     </h2>
-                    <div class="detailes row ms-3">
+                    <div class="detailes row ms-10">
                         <div class="col-6">
                             <p class="fw-bold">Full Name: <span class="fw-light">@(Model.UserName ?? "N/A")</span></p>
-                            <p class="fw-bold">Role: <span class="fw-light">@(Model.Role ?? "User")</span></p>
+                            <p class="fw-bold">
+                                Role:
+                                <span class="fw-light">
+                                    @if (ViewBag.Roles != null && ((IList<string>)ViewBag.Roles).Count > 0)
+                                    {
+                                        <ul>
+                                            @foreach (var role in (IList<string>)ViewBag.Roles)
+                                            {
+                                                <li>@role</li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <span>User</span>
+                                    }
+                                </span>
+                            </p>
+
+
+                           
                         </div>
-                        <div class="col-6">
+                        <div class="col-3">
                             <p class="fw-bold">Phone: <span class="fw-light">@(Model.PhoneNumber ?? "N/A")</span></p>
                             <p class="fw-bold">Joined: <span class="fw-light">@Model.CreatedAt.ToString("MMMM yyyy")</span></p>
                         </div>

@@ -233,17 +233,34 @@ namespace MAlex.Controllers
         // ============================
         //     ADMIN TICKET MANAGEMENT
         // ============================
-        public async Task<IActionResult> TicketsManagement()
+
+        [Authorize(Roles ="Admin")]
+        public async Task<IActionResult> TicketsManagement(int page = 1)
         {
-            var tickets = await _context.Tickets
+
+            int pageSize = 10;
+
+            var tickets =  _context.Tickets
                 .Include(t => t.Trip)
                     .ThenInclude(tr => tr.StartStation)
                 .Include(t => t.Trip)
                     .ThenInclude(tr => tr.EndStation)
-                .OrderByDescending(t => t.PurchaseDate)
-                .ToListAsync();
+                .OrderByDescending(t => t.PurchaseDate);
+              
+            int totalTickets = await tickets.CountAsync();
 
-            return View(tickets);
+            var returnedTickets = await tickets.Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = (int)Math.Ceiling(totalTickets / (double)pageSize);
+
+
+
+
+
+            return View(returnedTickets);
         }
 
     }

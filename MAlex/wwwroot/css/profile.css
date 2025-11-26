@@ -6,6 +6,9 @@ span {
 a {
   text-decoration: none;
 }
+body {
+scroll-behavior:auto; 
+}
 
 :root {
   --orange_color: #f58220;
@@ -46,7 +49,6 @@ h1::after {
   transform: translate(-50%, -50%);
 }
 
-/* & edit_section */
 section {
   background-color:var(--lightGray_color);
 }
@@ -188,7 +190,7 @@ h1{
  
   border-color: #dc3545 !important; 
 }
-/* &ticket_section */
+
 .container .ticket{
        max-height: 40vh;
 overflow-y: auto;
