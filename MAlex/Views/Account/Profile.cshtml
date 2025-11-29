@@ -1,8 +1,10 @@
 ﻿@using MetroApp.Models
 @model User
+
 @{
     ViewData["Title"] = "Your Profile";
 }
+
 @section Styles {
     <link rel="stylesheet" href="~/css/profile.css" />
 }
@@ -12,16 +14,16 @@
         <picture class="position-absolute top-0 start-0 ms-5">
             <img src="~/images/logo.jpg" class="rounded-circle" alt="" />
         </picture>
+
         <h1 class="text-center mb-3 pt-4 animate__animated animate__fadeInDown">Your Profile</h1>
-        <div class="title">
-            <p class="text-center mb-3 animate__animated animate__fadeInDown">
-                Stay connected to every ride-your travel details, tickets, and updates in one place.
-            </p>
-        </div>
+
+        <p class="text-center mb-3 animate__animated animate__fadeInDown">
+            Stay connected to every ride-your travel details, tickets, and updates in one place.
+        </p>
 
         <ul class="nav justify-content-center animate__animated animate__fadeIn">
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#" onclick="displayProfile()">Profile</a>
+                <a class="nav-link active" href="#" onclick="displayProfile()">Profile</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#" onclick="displayTicket()">My Tickets</a>
@@ -29,63 +31,83 @@
         </ul>
 
         <div class="row shadow p-3 mt-3 rounded main bg-white animate__animated animate__fadeIn">
+
+           
             <div class="col-6">
                 <div class="inner1 shadow rounded-4 p-3 d-flex justify-content-center align-items-center flex-column">
                     <img class="rounded-circle bg-white" src="~/images/testimonial-2.jpg" alt="User Photo" />
+
                     <div class="personal_info text-white text-center">
                         <p>@(Model.UserName ?? Model.Email)</p>
                         <span>@Model.Email</span>
                     </div>
-                    <a asp-controller="Account" asp-action="UpdateProfile" class="text-bg-dark p-2">Edit Profile</a>
-                    
+
+                    <a asp-controller="Account" asp-action="UpdateProfile" class="text-bg-dark p-2">
+                        Edit Profile
+                    </a>
                 </div>
             </div>
 
-            <div class="card1 col-4">
+           
+            <div class="col-6">
                 <div class="welcome">
                     <p class="fs-3 fw-bold"><span>Welcome !</span> @(Model.UserName ?? Model.Email)</p>
                 </div>
 
-                <div class="inner shadow p-3 rounded-5" id="profileSection">
-                    <h2 class="fs-10 ms-3">
-                        <i class="fa-solid fa-note-sticky fs-5"></i> Personal Information.
+                <div class="inner shadow p-4 rounded-5" id="profileSection">
+                    <h2 class="fs-5 mb-3">
+                        <i class="fa-solid fa-note-sticky fs-5"></i> Personal Information
                     </h2>
-                    <div class="detailes row ms-10">
-                        <div class="col-6">
-                            <p class="fw-bold">Full Name: <span class="fw-light">@(Model.UserName ?? "N/A")</span></p>
-                            <p class="fw-bold">
-                                Role:
-                                <span class="fw-light">
-                                    @if (ViewBag.Roles != null && ((IList<string>)ViewBag.Roles).Count > 0)
-                                    {
-                                        <ul>
-                                            @foreach (var role in (IList<string>)ViewBag.Roles)
-                                            {
-                                                <li>@role</li>
-                                            }
-                                        </ul>
-                                    }
-                                    else
-                                    {
-                                        <span>User</span>
-                                    }
-                                </span>
-                            </p>
 
+                    <div class="info-grid">
 
-                           
+                        <div class="row-item">
+                            <span class="label">Full Name: </span>
+                            <span class="value">
+                                @(string.IsNullOrEmpty(Model.UserName) ? "N/A" : Model.UserName)
+                            </span>
                         </div>
-                        <div class="col-3">
-                            <p class="fw-bold">Phone: <span class="fw-light">@(Model.PhoneNumber ?? "N/A")</span></p>
-                            <p class="fw-bold">Joined: <span class="fw-light">@Model.CreatedAt.ToString("MMMM yyyy")</span></p>
+
+                        <div class="row-item">
+                            <span class="label">Email: </span>
+                            <span class="value">@Model.Email</span>
                         </div>
+
+                        <div class="row-item">
+                            <span class="label">Phone: </span>
+                            <span class="value">
+                                @(string.IsNullOrEmpty(Model.PhoneNumber) ? "N/A" : Model.PhoneNumber)
+                            </span>
+                        </div>
+
+                        <div class="row-item">
+                            <span class="label">Joined: </span>
+                            <span class="value">@Model.CreatedAt.ToString("MMMM yyyy")</span>
+                        </div>
+
+                        <div class="row-item">
+                            <span class="label">Role: </span>
+                            <span class="value">
+                                @if (ViewBag.Roles != null && ((IList<string>)ViewBag.Roles).Any())
+                                {
+                                    @string.Join(", ", (IList<string>)ViewBag.Roles)
+                                }
+                                else
+                                {
+                                    <text>Visitor</text>
+                                }
+                            </span>
+                        </div>
+
                     </div>
                 </div>
 
+                <!-- Tickets Section -->
                 <div class="inner_ticket p-3 rounded-5 d-none" id="ticketSection">
                     <h2 class="fs-4 ms-3">
                         <i class="fa-solid fa-ticket"></i> My Tickets:
                     </h2>
+
                     <div class="row ms-3">
                         <div class="col-12 ticket">
                             @if (Model.UserTickets != null && Model.UserTickets.Any())
@@ -93,20 +115,25 @@
                                 @foreach (var userTicket in Model.UserTickets.OrderByDescending(ut => ut.Ticket.PurchaseDate))
                                 {
                                     var ticket = userTicket.Ticket;
+
                                     <div class="my_ticket shadow p-2 mt-4 rounded-3 position-relative">
-                                        <div class="d-flex justify-content-start">
-                                            <h3 class="fw-bold fs-5">Ticket #@ticket.TicketID</h3>
-                                        </div>
-                                        <div class="ms-4">
-                                            <p class="fs-5 mb-0">Purchased Date: @ticket.PurchaseDate.ToString("MMM dd, yyyy")</p>
-                                            @if (ticket.Trip != null)
-                                            {
-                                                <span class="text-muted fs-6">@ticket.Trip.StartStation?.StationName → @ticket.Trip.EndStation?.StationName</span>
-                                                <br />
-                                                <span class="text-muted fs-6">Price: @ticket.Trip.TotalPrice EGP</span>
-                                            }
-                                        </div>
-                                        <form asp-controller="Ticket" asp-action="DeleteTicket" method="post" class="position-absolute bottom-0 end-0 p-2 bg-white rounded-circle m-3">
+                                        <h3 class="fw-bold fs-5">Ticket #@ticket.TicketID</h3>
+
+                                        <p class="fs-5 mb-0">Purchased Date: @ticket.PurchaseDate.ToString("MMM dd, yyyy")</p>
+
+                                        @if (ticket.Trip != null)
+                                        {
+                                            <span class="text-muted fs-6">
+                                                @ticket.Trip.StartStation?.StationName → @ticket.Trip.EndStation?.StationName
+                                            </span>
+                                            <br />
+                                            <span class="text-muted fs-6">
+                                                Price: @ticket.Trip.TotalPrice EGP
+                                            </span>
+                                        }
+
+                                        <form asp-controller="Ticket" asp-action="DeleteTicket" method="post"
+                                              class="position-absolute bottom-0 end-0 p-2 bg-white rounded-circle m-3">
                                             <input type="hidden" name="id" value="@ticket.TicketID" />
                                             <button type="submit" class="border-0 bg-transparent">
                                                 <i class="fa-solid fa-trash-can" style="color: #fa0000"></i>
@@ -121,7 +148,9 @@
                             }
                         </div>
                     </div>
+
                 </div>
+
             </div>
         </div>
     </div>
@@ -130,4 +159,3 @@
 @section Scripts {
     <script src="~/js/Profile.js"></script>
 }
-

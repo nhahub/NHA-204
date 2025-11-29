@@ -1,0 +1,54 @@
+﻿@model MAlex.Models.UserSubscription
+
+@{
+    ViewData["Title"] = "Edit User Subscription";
+}
+
+<h1 class="mb-4">Edit User Subscription</h1>
+
+<form asp-action="EditUserSubscription" method="post">
+    <input type="hidden" asp-for="UserSubscriptionID" />
+
+    <div class="mb-3">
+        <label class="form-label">User</label>
+        <input type="text" class="form-control" value="@Model.User?.UserName" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Subscription</label>
+
+
+
+        <select asp-for="SubscriptionID" class="form-select" asp-items="@(new SelectList(ViewBag.Subscriptions, "SubscriptionID", "Name", Model.SubscriptionID))">
+            <option value="">-- Select Subscription --</option>
+        </select>
+        <span asp-validation-for="SubscriptionID" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="StartDate" class="form-label">Start Date</label>
+        <input asp-for="StartDate" class="form-control" type="date" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="EndDate" class="form-label">End Date</label>
+        <input asp-for="EndDate" class="form-control" type="date" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Status" class="form-label">Status</label>
+        <select asp-for="Status" class="form-select">
+            <option value="0" selected="@Model.Status == MAlex.Models.SubscriptionStatus.Active">Active</option>
+            <option value="1" selected="@Model.Status == MAlex.Models.SubscriptionStatus.Expired">Expired</option>
+            <option value="2" selected="@Model.Status == MAlex.Models.SubscriptionStatus.Cancelled">Cancelled</option>
+        </select>
+    </div>
+
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a asp-action="Index" class="btn btn-secondary">Back</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

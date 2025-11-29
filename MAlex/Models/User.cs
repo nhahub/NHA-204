@@ -18,6 +18,7 @@ namespace MetroApp.Models
         public string? EmailConfirmationCode { get; set; }
         public DateTime? EmailConfirmationCodeExpiry { get; set; }
 
+        public virtual ICollection<UserSubscription> UserSubscriptions { get; set; } = new List<UserSubscription>();
 
         public DateTime CreatedAt { get; set; } = DateTime.Now; 
 public virtual ICollection<Subscrubtion> Subscriptions { get; set; } = new List<Subscrubtion>();

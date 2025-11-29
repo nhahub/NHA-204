@@ -1,0 +1,48 @@
+﻿@model MAlex.Models.UserSubscription
+
+@{
+    ViewData["Title"] = "Create User Subscription";
+}
+
+<h2>Create User Subscription</h2>
+
+<form asp-action="CreateUserSubscription" method="post" class="mt-3">
+
+    <div class="mb-3">
+        <label class="form-label">User</label>
+        <select asp-for="UserID" class="form-control" required>
+            <option value="">-- Select User --</option>
+            @foreach (var user in ViewBag.Users)
+            {
+                <option value="@user.Id">@user.UserName (@user.Email)</option>
+            }
+            }
+        </select>
+        <span asp-validation-for="UserID" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Subscription Plan</label>
+        <select asp-for="SubscriptionID" class="form-control" required>
+            <option value="">-- Select Subscription --</option>
+            @foreach (var sub in ViewBag.Subscriptions)
+            {
+                <option value="@sub.SubscriptionID">@sub.Name (@sub.DurationDays days)</option>
+            }
+            }
+        </select>
+        <span asp-validation-for="SubscriptionID" class="text-danger"></span>
+    </div>
+
+    <!-- StartDate and EndDate are auto-generated in controller -->
+    <input type="hidden" asp-for="StartDate" />
+    <input type="hidden" asp-for="EndDate" />
+
+    <button type="submit" class="btn btn-primary">Assign Subscription</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

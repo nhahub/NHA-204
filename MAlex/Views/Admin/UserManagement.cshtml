@@ -1,0 +1,205 @@
+﻿@using MetroApp.Models
+
+@model IEnumerable<User>
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المستخدمين</title>
+    <style>
+        :root {
+            --navy-blue: #001f3f;
+            --light-blue: #00529a;
+            --soft-gray: rgba(255, 255, 255, 0.85);
+        }
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background-size: cover;
+            margin: 0;
+            color: var(--navy-blue);
+        }
+
+            body::before {
+                content: "";
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: url("../images/el-maamoura-beach-alexandria1.jpg") no-repeat center center fixed;
+                background-size: cover;
+                filter: blur(1px);
+                z-index: -1;
+            }
+
+        .overlay {
+            backdrop-filter: blur(8px);
+            min-height: 100vh;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--navy-blue);
+            font-size: 2.5em;
+            margin-bottom: 30px;
+        }
+
+        .search-bar {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+            .search-bar input {
+                width: 40%;
+                padding: 10px;
+                border-radius: 10px;
+                border: 1px solid #ccc;
+                font-size: 1em;
+                text-align: right;
+            }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--soft-gray);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--light-blue);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(0, 116, 217, 0.05);
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .danger-btn {
+            background-color: #ff4136;
+            color: white;
+        }
+
+        .success-btn {
+            background-color: #2ecc40;
+            color: white;
+        }
+
+        .save-btn {
+            background-color: var(--light-blue);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay">
+        <h1>👥 إدارة حسابات المستخدمين</h1>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="🔍 ابحث عن مستخدم بالاسم أو البريد الإلكتروني">
+        </div>
+
+        <table id="usersTable">
+            <tr>
+              
+                <th>اسم المستخدم</th>
+                <th>البريد الإلكتروني</th>
+                <th>الدور</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+            </tr>
+
+            @foreach (var user in Model)
+            {
+                <tr>
+                    
+
+                    <td><input type="text" value="@user.UserName"></td>
+
+                    <td><input type="email" value="@user.Email"></td>
+
+                    <td>
+                        <select>
+                            <option>مستخدم</option>
+                            <option>مشرف</option>
+                        </select>
+                    </td>
+
+                    <td>
+                        @(user.LockoutEnd != null && user.LockoutEnd > DateTime.Now
+                                            ? "❌ موقوف"
+                                            : "✅ مفعل")
+                </td>
+
+                    <td>
+
+                  
+
+                    @if (user.LockoutEnd != null && user.LockoutEnd > DateTime.Now)
+                        {
+                            <form asp-controller="Admin" asp-action="UnlockUser" asp-route-id="@user.Id" method="post" style="display:inline-block;">
+                                <button type="submit" class="danger-btn">Unlock</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-controller="Admin" asp-action="LockUser" asp-route-id="@user.Id" method="post" style="display:inline-block;">
+                                <button type="submit" class="danger-btn">Lock</button>
+                            </form>
+                        }
+
+
+               
+
+
+                       
+
+                        <form asp-action="EditUser" asp-route-id="@user.Id" method="get" style="display:inline-block;">
+                            <button class="save-btn">تعديل</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById("searchInput");
+        const table = document.getElementById("usersTable");
+        const rows = table.getElementsByTagName("tr");
+
+        searchInput.addEventListener("keyup", function () {
+            const filter = this.value.toLowerCase();
+            for (let i = 1; i < rows.length; i++) {
+                const name = rows[i].cells[1]?.textContent.toLowerCase() || "";
+                const email = rows[i].cells[2]?.textContent.toLowerCase() || "";
+                rows[i].style.display =
+                    name.includes(filter) || email.includes(filter) ? "" : "none";
+            }
+        });
+    </script>
+</body>
+
+</html>

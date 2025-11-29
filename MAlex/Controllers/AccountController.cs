@@ -13,7 +13,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MAlex.Controllers
 {
-    
+
     public class AccountController : Controller
     {
         private readonly UserManager<User> userManager;
@@ -26,13 +26,13 @@ namespace MAlex.Controllers
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             AppDbContext context,
-            IEmailSender emailSender , RoleManager<IdentityRole> roleManager)
+            IEmailSender emailSender, RoleManager<IdentityRole> roleManager)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.context = context;
             this.emailSender = emailSender;
-            this.roleManager = roleManager; 
+            this.roleManager = roleManager;
         }
 
         // ================================
@@ -52,7 +52,7 @@ namespace MAlex.Controllers
             if (!ModelState.IsValid)
                 return View(userViewModel);
 
-        
+
             User user = new User
             {
                 UserName = userViewModel.Username,
@@ -70,26 +70,15 @@ namespace MAlex.Controllers
                     await userManager.AddToRoleAsync(user, "Visitor");
                 }
 
-
-                var random = new Random();
-                user.EmailConfirmationCode = random.Next(100000, 999999).ToString(); 
-
-                user.EmailConfirmationCodeExpiry = DateTime.UtcNow.AddMinutes(15);
-
+                // Automatically confirm email
+                user.EmailConfirmed = true;
                 await userManager.UpdateAsync(user);
-
-             
-               
-                await emailSender.SendEmailAsync(
-                    user.Email,
-                    "Confirm your email",
-                    $"Your Comfirmation code {user.EmailConfirmationCode}"
-                );
 
                 return View("RegistrationSuccessful");
             }
 
-          
+
+
             foreach (var error in result.Errors)
             {
                 ModelState.AddModelError("", error.Description);
@@ -114,19 +103,20 @@ namespace MAlex.Controllers
             if (!ModelState.IsValid)
             {
                 return View(model);
-                
+
             }
 
             var user = await userManager.FindByNameAsync(model.Username);
             if (user == null)
             {
                 return View(model);
-                
+
             }
 
-            if (user.EmailConfirmationCode == model.Code && user.EmailConfirmationCodeExpiry > DateTime.UtcNow) {
+            if (user.EmailConfirmationCode == model.Code && user.EmailConfirmationCodeExpiry > DateTime.UtcNow)
+            {
 
-                user.EmailConfirmed = true; 
+                user.EmailConfirmed = true;
                 user.EmailConfirmationCode = null;
                 user.EmailConfirmationCodeExpiry = null;
                 await
@@ -176,44 +166,47 @@ namespace MAlex.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SaveLogin(LoginUserViewModel UserViewModel)
+        public async Task<IActionResult> SaveLogin(LoginUserViewModel model)
         {
             if (!ModelState.IsValid)
-                return View("Login", UserViewModel);
+                return View("Login", model);
 
-           
-            User AppUser = await userManager.FindByNameAsync(UserViewModel.Username);
+            var user = await userManager.FindByNameAsync(model.Username);
 
-            if (AppUser == null)
+            if (user == null)
             {
                 ModelState.AddModelError("", "Invalid username or password");
-                return View("Login", UserViewModel);
+                return View("Login", model);
             }
 
-       
-            if (!await userManager.IsEmailConfirmedAsync(AppUser))
+            //if (!await userManager.IsEmailConfirmedAsync(user))
+            //{
+            //    ModelState.AddModelError("", "Please confirm your email first.");
+            //    return View("Login", model);
+            //}
+
+
+            var result = await signInManager.PasswordSignInAsync(
+                user,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: true
+            );
+
+            if (result.Succeeded)
             {
-                ModelState.AddModelError("", "Please confirm your email first.");
-                return View("Login", UserViewModel);
-            }
-
-           
-            bool validPassword = await userManager.CheckPasswordAsync(AppUser, UserViewModel.Password);
-
-
-
-            if (validPassword)
-            {
-         
-                await signInManager.SignInAsync(AppUser, UserViewModel.RememberMe);
-
                 return RedirectToAction("Index", "Home");
             }
 
-            ModelState.AddModelError("", "Invalid username or password");
-            return View("Login", UserViewModel);
-        }
+            if (result.IsLockedOut)
+            {
+                ModelState.AddModelError("", "Your account is locked.");
+                return View("Login", model);
+            }
 
+            ModelState.AddModelError("", "Invalid username or password");
+            return View("Login", model);
+        }
 
         // ================================
         // LOGOUT
@@ -275,11 +268,12 @@ namespace MAlex.Controllers
         }
 
 
-       
+
 
         [HttpGet]
-        public async Task<IActionResult> ForgetPassword() { 
-            
+        public async Task<IActionResult> ForgetPassword()
+        {
+
             return View();
         }
 
@@ -293,10 +287,11 @@ namespace MAlex.Controllers
                 return View(model);
             }
 
-           var existEmail  = await userManager.FindByEmailAsync(model.Email);
+            var existEmail = await userManager.FindByEmailAsync(model.Email);
 
             if (existEmail == null)
                 return RedirectToAction("ForgetPasswordConfirmation");
+
 
 
             var code = await userManager.GenerateTwoFactorTokenAsync(existEmail, TokenOptions.DefaultEmailProvider);
@@ -307,14 +302,14 @@ namespace MAlex.Controllers
                existEmail.Email,
                 "Reset your Password",
                $"code {code}"
-               ); 
+               );
 
 
 
             // later 
 
 
-            return View("ResetpasswordWithCode", new ResetPassViewModel{ Email  = existEmail.Email }); 
+            return View("ResetpasswordWithCode", new ResetPassViewModel { Email = existEmail.Email });
 
 
         }
@@ -323,7 +318,7 @@ namespace MAlex.Controllers
         public async Task<IActionResult> ResetpasswordWithCode(string email)
         {
 
-            return View(new ResetPassViewModel{ Email = email });
+            return View(new ResetPassViewModel { Email = email });
         }
 
 
@@ -332,9 +327,13 @@ namespace MAlex.Controllers
         {
             if (!ModelState.IsValid)
                 return View(model);
+
+
             var user = await userManager.FindByEmailAsync(model.Email);
+
             if (user == null)
                 return RedirectToAction("ResetPasswordConformation");
+
 
             var isCodeValid = await userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider, model.Code);
 
@@ -344,7 +343,7 @@ namespace MAlex.Controllers
                 return View(model);
             }
 
-            var resetToken   =await  userManager.GeneratePasswordResetTokenAsync(user);
+            var resetToken = await userManager.GeneratePasswordResetTokenAsync(user);
 
             var result = await
                 userManager.ResetPasswordAsync(
@@ -353,12 +352,14 @@ namespace MAlex.Controllers
                         model.NewPassword
                     );
 
-            if (result.Succeeded) {
+            if (result.Succeeded)
+            {
                 return RedirectToAction("ResetPasswordConformation");
             }
 
-            foreach (var item in result.Errors) {
-                ModelState.AddModelError("", item.Description); 
+            foreach (var item in result.Errors)
+            {
+                ModelState.AddModelError("", item.Description);
             }
 
             return View(model);
@@ -367,5 +368,33 @@ namespace MAlex.Controllers
 
         }
 
+
+
+
+        public static async Task CreateAdminAsync(UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+        {
+            string adminEmail = "admin@example.com";
+            string adminPassword = "Admin@123";
+
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+            if (adminUser == null)
+            {
+                adminUser = new User
+                {
+                    UserName = "Ahmed1",
+                    Email = adminEmail,
+                    EmailConfirmed = true
+                };
+
+                var result = await userManager.CreateAsync(adminUser, adminPassword);
+
+                if (result.Succeeded)
+                {
+                    // Assign Admin role
+                    await userManager.AddToRoleAsync(adminUser, "Admin");
+                }
+            }
+
+        }
     }
 }

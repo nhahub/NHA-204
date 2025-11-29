@@ -4,6 +4,7 @@ using MAlex;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MAlex.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251126132925_ContactMessage")]
+    partial class ContactMessage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -320,54 +323,35 @@ namespace MAlex.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubscriptionID"));
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("DurationDays")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("date");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
 
-                    b.Property<string>("UserId")
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserID")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("SubscriptionID");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserID");
 
                     b.ToTable("Subscriptions");
-
-                    b.HasData(
-                        new
-                        {
-                            SubscriptionID = 1,
-                            Description = "30-day pass",
-                            DurationDays = 30,
-                            Name = "Monthly",
-                            Price = 20m
-                        },
-                        new
-                        {
-                            SubscriptionID = 2,
-                            Description = "90-day pass",
-                            DurationDays = 90,
-                            Name = "Quarterly",
-                            Price = 50m
-                        },
-                        new
-                        {
-                            SubscriptionID = 3,
-                            Description = "365-day pass",
-                            DurationDays = 365,
-                            Name = "Yearly",
-                            Price = 180m
-                        });
                 });
 
             modelBuilder.Entity("MAlex.Models.Ticket", b =>
@@ -471,42 +455,6 @@ namespace MAlex.Migrations
                     b.HasIndex("StartStationID");
 
                     b.ToTable("Trips");
-                });
-
-            modelBuilder.Entity("MAlex.Models.UserSubscription", b =>
-                {
-                    b.Property<int>("UserSubscriptionID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserSubscriptionID"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("date");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SubscriptionID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserID")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("UserSubscriptionID");
-
-                    b.HasIndex("SubscriptionID");
-
-                    b.HasIndex("UserID");
-
-                    b.ToTable("UserSubscriptions");
                 });
 
             modelBuilder.Entity("MetroApp.Models.User", b =>
@@ -745,9 +693,13 @@ namespace MAlex.Migrations
 
             modelBuilder.Entity("MAlex.Models.Subscrubtion", b =>
                 {
-                    b.HasOne("MetroApp.Models.User", null)
+                    b.HasOne("MetroApp.Models.User", "User")
                         .WithMany("Subscriptions")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MAlex.Models.Ticket", b =>
@@ -778,25 +730,6 @@ namespace MAlex.Migrations
                     b.Navigation("EndStation");
 
                     b.Navigation("StartStation");
-                });
-
-            modelBuilder.Entity("MAlex.Models.UserSubscription", b =>
-                {
-                    b.HasOne("MAlex.Models.Subscrubtion", "Subscription")
-                        .WithMany("UserSubscriptions")
-                        .HasForeignKey("SubscriptionID")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("MetroApp.Models.User", "User")
-                        .WithMany("UserSubscriptions")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Subscription");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MetroApp.Models.UserTicket", b =>
@@ -876,11 +809,6 @@ namespace MAlex.Migrations
                     b.Navigation("StartTrips");
                 });
 
-            modelBuilder.Entity("MAlex.Models.Subscrubtion", b =>
-                {
-                    b.Navigation("UserSubscriptions");
-                });
-
             modelBuilder.Entity("MAlex.Models.Ticket", b =>
                 {
                     b.Navigation("UserTickets");
@@ -894,8 +822,6 @@ namespace MAlex.Migrations
             modelBuilder.Entity("MetroApp.Models.User", b =>
                 {
                     b.Navigation("Subscriptions");
-
-                    b.Navigation("UserSubscriptions");
 
                     b.Navigation("UserTickets");
                 });

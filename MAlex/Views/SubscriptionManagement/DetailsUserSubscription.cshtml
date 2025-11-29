@@ -1,0 +1,36 @@
+﻿@model MAlex.Models.UserSubscription
+
+@{
+    ViewData["Title"] = "Subscription Details";
+}
+
+<h2>User Subscription Details</h2>
+
+<div class="card mt-3">
+    <div class="card-body">
+
+        <h4 class="mb-3">User Info</h4>
+        <p><strong>User ID:</strong> @Model.UserID</p>
+        <p><strong>User Name:</strong> @Model.User?.UserName</p>
+        <p><strong>Email:</strong> @Model.User?.Email</p>
+
+        <hr />
+
+        <h4 class="mb-3">Subscription Info</h4>
+        <p><strong>Subscription:</strong> @Model.Subscription?.Name</p>
+        <p><strong>Price:</strong> @Model.Subscription?.Price</p>
+        <p><strong>Duration:</strong> @Model.Subscription?.DurationDays days</p>
+        <p><strong>Description:</strong> @Model.Subscription?.Description</p>
+
+        <hr />
+
+        <h4 class="mb-3">Status</h4>
+        <p><strong>Start Date:</strong> @Model.StartDate.ToShortDateString()</p>
+        <p><strong>End Date:</strong> @Model.EndDate.ToShortDateString()</p>
+        <p><strong>Status:</strong> @Model.Status</p>
+        <p><strong>Created At:</strong> @Model.CreatedAt</p>
+
+    </div>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Back</a>

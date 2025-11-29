@@ -1,4 +1,5 @@
 using MAlex;
+using MAlex.Controllers;
 using MAlex.Services;
 using MetroApp.Models;
 using Microsoft.AspNetCore.Identity;
@@ -16,22 +17,23 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configure Identity
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
-    options.SignIn.RequireConfirmedEmail = true; // require email confirmation
+    options.SignIn.RequireConfirmedEmail = true;
+
+    // Enable Lockout
+    options.Lockout.AllowedForNewUsers = true;
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(3650);
+    options.Lockout.MaxFailedAccessAttempts = 5;
 })
 .AddEntityFrameworkStores<AppDbContext>()
-.AddDefaultTokenProviders(); // Important: register token providers
+.AddDefaultTokenProviders(); 
 
-// Register EmailSender
 builder.Services.AddSingleton<IEmailSender, EmailSender>();
 
 var app = builder.Build();
 
-// -------------------------------
-// 2?? Configure middleware
-// -------------------------------
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -53,4 +55,22 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+
+    string[] roles = new string[] { "Visitor", "Admin" };
+
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
+    }
+
+    // Create admin
+    await AccountController.CreateAdminAsync(userManager, roleManager);
+}
 app.Run();

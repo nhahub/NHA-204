@@ -1,0 +1,110 @@
+﻿@model MAlex.Models.ContactMessage
+
+@{
+    ViewData["Title"] = "Contact & Help";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <link rel="shortcut icon" href="~/images/logo.jpg" type="image/x-icon" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=PT+Sans+Caption:wght@400;700&family=Righteous&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="~/CSS/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/CSS/all.min.css" />
+    <link rel="stylesheet" href="~/CSS/contact.css" />
+    <link rel="stylesheet" href="~/CSS/media.css" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+</head>
+
+<body>
+    <picture class="position-absolute top-0 start-0 ms-5">
+        <img src="~/images/logo.jpg" class="rounded-circle" alt="" />
+    </picture>
+
+    <section class="contact-section">
+        <h2>Get in Touch</h2>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success mt-3 animate__animated animate__fadeIn">@TempData["SuccessMessage"]</div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger mt-3 animate__animated animate__fadeIn">@TempData["ErrorMessage"]</div>
+        }
+
+        <div class="contact-container">
+            <div class="contact-form">
+                <form asp-controller="Contact" asp-action="Send" method="post">
+                    @Html.AntiForgeryToken()
+
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                    <label asp-for="FullName">Full Name</label>
+                    <input asp-for="FullName" placeholder="Enter your name" class="form-control">
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+
+                    <label asp-for="Email">Email</label>
+                    <input asp-for="Email" placeholder="Enter your email" class="form-control">
+                    <span asp-validation-for="Email" class="text-danger"></span>
+
+                    <label asp-for="Subject">Subject</label>
+                    <input asp-for="Subject" placeholder="Subject" class="form-control">
+                    <span asp-validation-for="Subject" class="text-danger"></span>
+
+                    <label asp-for="Message">Message</label>
+                    <textarea asp-for="Message" placeholder="Write your message here..." class="form-control"></textarea>
+                    <span asp-validation-for="Message" class="text-danger"></span>
+
+                    <button type="submit">Send Message</button>
+                </form>
+            </div>
+
+            <div class="contact-info">
+                <h3>Contact Information</h3>
+                <p><strong>Email:</strong> support@metroalex.com</p>
+                <p><strong>Phone:</strong> +20 10 6463 9202</p>
+                <p><strong>Working Hours:</strong> 8:00 AM – 6:00 PM (Sun–Thu)</p>
+                <p><strong>Address:</strong> Raml Station, Alexandria, Egypt</p>
+            </div>
+        </div>
+
+        <div class="faq-section">
+            <h2>FAQs</h2>
+
+            <div class="faq-item">
+                <h4>How can I book a metro ticket?</h4>
+                <p>You can book tickets easily through the “Book a Ticket” page using your account.</p>
+            </div>
+
+            <div class="faq-item">
+                <h4>How can I cancel my booking?</h4>
+                <p>Log into your account, go to “My Bookings”, and select “Cancel”.</p>
+            </div>
+
+            <div class="faq-item">
+                <h4>Where can I find metro schedules?</h4>
+                <p>Visit the “Stations Info” or “Live Map” pages for up-to-date train times.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <script src="~/JS/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+
+</body>
+</html>

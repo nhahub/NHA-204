@@ -1,0 +1,89 @@
+﻿@model MAlex.ViewModels.SubscriptionManagementViewModel
+
+@{
+    ViewData["Title"] = "Subscription Management";
+}
+
+<h1>Subscription Management</h1>
+
+<h2>User Subscriptions</h2>
+<a asp-action="CreateUserSubscription" class="btn btn-success mb-2">Create New User Subscription</a>
+<table class="table table-bordered">
+
+    <thead>
+        <tr>
+            <th>User ID</th>
+            <th>User Name</th>
+            <th>Subscription</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var us in Model.UserSubscriptions)
+        {
+            <tr>
+                <td>@us.UserID</td>
+                <td>@us.User?.UserName</td>
+                <td>@us.Subscription?.Name</td>
+                <td>@us.StartDate.ToShortDateString()</td>
+                <td>@us.EndDate.ToShortDateString()</td>
+                <td>@us.Status</td>
+                <td>
+
+                    <a asp-action="EditUserSubscription" asp-route-id="@us.UserSubscriptionID" class="btn btn-sm btn-primary">Edit</a>
+                    <a asp-action="DeleteUserSubscription" asp-route-id="@us.UserSubscriptionID" class="btn btn-sm btn-danger">Delete</a>
+                    <a asp-action="DetailsUserSubscription" asp-route-id="@us.UserSubscriptionID" class="btn btn-sm btn-info">Details</a>
+                </td>
+
+
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h2>Subscriptions</h2>
+<a asp-controller="SubscriptionManagement" asp-action="CreateSubscription" class="btn btn-success mb-2">
+    Create New Subscription
+</a>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Duration (days)</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var sub in Model.Subscriptions)
+        {
+            <tr>
+                <td>@sub.Name</td>
+                <td>@sub.Price</td>
+                <td>@sub.DurationDays</td>
+                <td>@sub.Description</td>
+                <td>
+                    <a asp-controller="SubscriptionManagement"
+                       asp-action="EditSubscription"
+                       asp-route-id="@sub.SubscriptionID"
+                       class="btn btn-sm btn-primary">
+                        Edit
+                    </a>
+
+                    <a asp-controller="SubscriptionManagement"
+                       asp-action="DeleteSubscription"
+                       asp-route-id="@sub.SubscriptionID"
+                       class="btn btn-sm btn-danger">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-action="Index" class="btn btn-secondary">Back</a>

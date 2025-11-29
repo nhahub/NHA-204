@@ -1,0 +1,105 @@
+﻿@model List<MAlex.Models.Station>
+
+@{
+    ViewData["Title"] = "Metro Stations";
+}
+
+<h2>Metro Stations</h2>
+
+<section class="stations-container">
+    @foreach (var station in Model)
+    {
+        <div class="station-card">
+            <h2>@station.StationName</h2>
+            <p><strong>Location:</strong> @station.Location</p>
+            <p>
+                <strong>Status:</strong>
+                <span class="@(station.Status == "Active" ? "status-active" : "status-inactive")">
+                    @(station.Status == "Active" ? "Active" : "Under Maintenance")
+                </span>
+            </p>
+            <p>
+                <strong>Opening Time:</strong> @station.OpeningTime.ToString(@"hh\:mm") <br />
+                <strong>Closing Time:</strong> @station.ClosingTime.ToString(@"hh\:mm")
+            </p>
+        </div>
+    }
+</section>
+
+<style>
+    :root {
+        --navy-blue: #0b3c65;
+        --orange: #f58220;
+        --white: #ffffff;
+        --light-blue: #4a90e2;
+    }
+
+
+    html {
+        margin: 0;
+        padding: 0;
+
+        overflow-x: hidden;
+    }
+
+    body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f9f9f9;
+
+        padding: 20px;
+
+        margin: 0;
+    }
+
+    h2 {
+        text-align: center;
+        color: var(--navy-blue);
+
+        margin-top: 0;
+        margin-bottom: 30px;
+    }
+
+    .stations-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        max-width: 1000px;
+
+        margin: 0 auto;
+
+    }
+
+    .station-card {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-left: 6px solid var(--light-blue);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+        transition: transform 0.2s ease;
+    }
+
+        .station-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .station-card h2 {
+            color: var(--navy-blue);
+            margin-bottom: 10px;
+        }
+
+        .station-card p {
+            color: #333;
+            margin: 6px 0;
+        }
+
+    .status-active {
+        color: #28a745;
+        font-weight: 600;
+    }
+
+    .status-inactive {
+        color: #dc3545;
+        font-weight: 600;
+    }
+</style>

@@ -1,0 +1,78 @@
+﻿@model List<MAlex.Models.Notification>
+
+@{
+    ViewData["Title"] = "Notification Management Panel";
+    Layout = "_Layout";
+}
+
+<section class="mt-5">
+    <div class="container mb-5">
+
+        <h1 class="text-center pt-4">
+            Notification Management Panel
+        </h1>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success mt-3">@TempData["SuccessMessage"]</div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger mt-3">@TempData["ErrorMessage"]</div>
+        }
+
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="inner rounded-bottom-4">
+                    <h2>
+                        Send New Notification
+                    </h2>
+
+                    <form asp-controller="Notification" asp-action="Create" method="post"
+                          class="d-flex align-content-center justify-content-center flex-column p-3">
+
+                        @Html.AntiForgeryToken()
+
+                        <label for="Title" class="fw-bold mb-2">Notification Title:</label>
+                        <input type="text"
+                               id="Title"
+                               name="Title"
+                               class="rounded-2 mb-3"
+                               placeholder="Enter title..."
+                               required />
+
+                        <label for="Message" class="fw-bold mb-2">Message:</label>
+                        <textarea id="Message"
+                                  name="Message"
+                                  rows="4"
+                                  class="rounded-2 mb-3"
+                                  placeholder="Enter message..."
+                                  required></textarea>
+
+                        <label for="Type" class="fw-bold mb-2">Notification Type:</label>
+                        <select id="Type" name="Type" required class="rounded-2 mb-4">
+                            @foreach (var type in Enum.GetValues(typeof(NotificationType)))
+                            {
+                                <option value="@type">@type.ToString()</option>
+                            }
+                        </select>
+
+                        <label for="ExpiresAt" class="fw-bold mb-2">Expires At (Optional):</label>
+                        <input type="datetime-local"
+                               id="ExpiresAt"
+                               name="ExpiresAt"
+                               class="rounded-2 mb-3" />
+
+                        <button type="submit" class="w-50 rounded-2 text-white p-2">Send Notification</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<footer class="text-center text-white p-1 mt-1">
+    <p class="mb-0">© 2025 Alexandria Metro.</p>
+    <p class="mb-0">© Digital Egypt Pioneers Initiative.</p>
+</footer>

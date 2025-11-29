@@ -1,6 +1,8 @@
 ﻿using MetroApp.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
+
 
 namespace MAlex.Models
 {
@@ -10,29 +12,20 @@ namespace MAlex.Models
         public int SubscriptionID { get; set; }
 
         [Required]
-        [StringLength(50)]
-        public string Type { get; set; } = string.Empty; 
+        [StringLength(100)]
+        public string Name { get; set; } = string.Empty; // e.g. Monthly, Quarterly
 
         [Required]
-        [Column(TypeName = "decimal(10,2)")]
+        [DataType(DataType.Currency)]
         public decimal Price { get; set; }
 
+        // Duration in days (30 = monthly, 90 = quarterly)
         [Required]
-        [Column(TypeName = "date")]
-        public DateTime StartDate { get; set; } = DateTime.Now;
+        public int DurationDays { get; set; }
 
-        [Required]
-        [Column(TypeName = "date")]
-        public DateTime EndDate { get; set; }
+        public string? Description { get; set; }
 
-        [Required]
-        [StringLength(20)]
-        public string Status { get; set; } = "Active"; 
-
-        [Required]
-        public string UserID { get; set; } = string.Empty;
-
-        [ForeignKey("UserID")]
-        public virtual User User { get; set; } = null!;
+        // Navigation
+        public ICollection<UserSubscription>? UserSubscriptions { get; set; }
     }
 }

@@ -17,9 +17,11 @@ namespace MAlex
         public DbSet<Station> Stations { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Subscrubtion> Subscriptions { get; set; }
+        public DbSet<UserSubscription> UserSubscriptions { get; set; }
         public DbSet<Trip> Trips { get; set; }
         public DbSet<UserTicket> UserTickets { get; set; }
         public DbSet<TicketType> TicketTypes { get; set; } = null!;
+        public DbSet<ContactMessage> ContactMessages { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -30,7 +32,7 @@ namespace MAlex
                   new TicketType { Id = 2, Type = "Daily Pass", Price = 40, Description = "Unlimited rides for 24 hours." },
                   new TicketType { Id = 3, Type = "Weekly Pass", Price = 100, Description = "Unlimited rides for 7 days." }
              );
-         
+
             builder.Entity<Trip>(entity =>
             {
                 entity.HasKey(e => e.TripID);
@@ -53,12 +55,12 @@ namespace MAlex
 
             builder.Entity<Ticket>(entity =>
             {
-              
+
                 entity.HasKey(e => e.TicketID);
                 entity.HasIndex(e => e.TripID);
             });
 
-            
+
             builder.Entity<UserTicket>(entity =>
             {
                 entity.HasKey(e => new { e.UserID, e.TicketID });
@@ -67,14 +69,37 @@ namespace MAlex
             });
 
             // Configure Subscription
+            //-----------------------------------------------------
+            // Configure Subscription
+
             builder.Entity<Subscrubtion>(entity =>
             {
-                entity.HasKey(e => e.SubscriptionID);
-                entity.HasIndex(e => e.UserID);
-                entity.Property(e => e.Price).HasPrecision(10, 2);
+                entity.HasKey(s => s.SubscriptionID);
+                entity.Property(s => s.Price).HasColumnType("decimal(18,2)");
             });
 
-           
+            builder.Entity<UserSubscription>(entity =>
+            {
+                entity.HasKey(us => us.UserSubscriptionID);
+
+                entity.HasOne(us => us.User)
+                      .WithMany(u => u.UserSubscriptions) // Ensure this navigation exists on User
+                      .HasForeignKey(us => us.UserID)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(us => us.Subscription)
+                      .WithMany(s => s.UserSubscriptions)
+                      .HasForeignKey(us => us.SubscriptionID)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            builder.Entity<Subscrubtion>().HasData(
+                new Subscrubtion { SubscriptionID = 1, Name = "Monthly", Price = 20m, DurationDays = 30, Description = "30-day pass" },
+                new Subscrubtion { SubscriptionID = 2, Name = "Quarterly", Price = 50m, DurationDays = 90, Description = "90-day pass" },
+                new Subscrubtion { SubscriptionID = 3, Name = "Yearly", Price = 180m, DurationDays = 365, Description = "365-day pass" }
+           );
+
+            //-----------------------------------------------------
             builder.Entity<Station>(entity =>
             {
                 entity.HasKey(e => e.StationID);

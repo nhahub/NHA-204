@@ -24,7 +24,7 @@ namespace MAlex.Services
                     _configuration["Email:Username"],
                     _configuration["Email:Password"]
                 ),
-                EnableSsl = true
+                EnableSsl = true    
             }; 
 
             var mailMessage = new MailMessage

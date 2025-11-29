@@ -1,0 +1,24 @@
+﻿@model MAlex.Models.Subscrubtion
+
+@{
+    ViewData["Title"] = "Delete Subscription";
+}
+
+<h2 class="text-danger">Delete Subscription</h2>
+<hr />
+
+<div class="alert alert-warning">
+    <strong>Are you sure you want to delete this subscription?</strong>
+</div>
+
+<div class="mb-2"><strong>Name:</strong> @Model.Name</div>
+<div class="mb-2"><strong>Price:</strong> @Model.Price</div>
+<div class="mb-2"><strong>Duration (days):</strong> @Model.DurationDays</div>
+<div class="mb-2"><strong>Description:</strong> @Model.Description</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" asp-for="SubscriptionID" />
+
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

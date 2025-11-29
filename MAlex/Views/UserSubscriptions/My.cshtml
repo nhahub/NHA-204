@@ -1,0 +1,66 @@
+﻿@model IEnumerable<MAlex.Models.UserSubscription>
+@{
+    ViewData["Title"] = "My Subscriptions";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">My Subscriptions</h2>
+
+    <table class="table table-bordered table-striped shadow">
+        <thead class="table-dark">
+            <tr>
+                <th>Subscription</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            <Subscription />
+        </thead>
+
+        <tbody>
+            @foreach (var item in Model)
+            {
+                var statusClass = item.Status switch
+                {
+                    SubscriptionStatus.Active => "badge bg-success",
+                    SubscriptionStatus.Cancelled => "badge bg-secondary",
+                    SubscriptionStatus.Expired => "badge bg-danger",
+                    _ => "badge bg-info"
+                };
+
+                <tr>
+                    <td>@item.Subscription.Name</td>
+                    <td>@item.StartDate.ToShortDateString()</td>
+                    <td>@item.EndDate.ToShortDateString()</td>
+
+                    <td><span class="@statusClass">@item.Status</span></td>
+
+                    <td>
+                        @if (item.Status == SubscriptionStatus.Active)
+                        {
+                            <form asp-action="Cancel" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@item.UserSubscriptionID" />
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    Cancel
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="text-muted">No actions</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

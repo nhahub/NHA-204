@@ -17,12 +17,17 @@
     <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/media.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-
     <style>
+
+
         html, body {
-            height: 100%;
+            height: auto;
+            min-height: 100vh;
             margin: 0;
+            overflow-x: hidden;
         }
+
+
 
         .navbar-light .navbar-nav .nav-link {
             color: black;
@@ -32,20 +37,24 @@
                 color: #555;
             }
 
+
+
         main.full-page-content {
             width: 100%;
-            min-height: 100vh;
-            margin-top: 70px; 
-            padding: 0; 
+            min-height: auto;
+            margin-top: 70px;
+            padding: 0;
         }
+
+
 
         .page-container {
             width: 100%;
             padding: 20px 40px;
             box-sizing: border-box;
         }
-    </style>
 
+    </style>
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
@@ -64,30 +73,54 @@
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" href="@Url.Action("Home", "Home")">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="@Url.Action("Tickets", "Ticket")">Tickets</a></li>
-                        <li class="nav-item"><a class="nav-link" href="@Url.Action("Subscribe", "Subscription")">Subscriptions</a></li>
-                        <li class="nav-item"><a class="nav-link" href="@Url.Action("Stations", "Station")">Stations Info</a></li>
-                        <li class="nav-item"><a class="nav-link" href="@Url.Action("SeeAlex", "Home")">Explore Alexandria</a></li>
-                        <li class="nav-item"><a class="nav-link" href="@Url.Action("Contact", "Home")">Contact/Help</a></li>
-
-                        @if (User.Identity?.IsAuthenticated == true)
+                        
+                        @if (User.IsInRole("Admin"))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link p-0 ps-3" href="@Url.Action("Profile", "Account")">
-                                    <img src="~/images/testimonial-2.jpg" class="rounded-circle" alt="profile logo" style="width:40px; height:40px;" />
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                    <button type="submit" class="nav-link btn btn-link">Logout</button>
-                                </form>
-                            </li>
+                            <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Home")">Home</a></li>
+                            <li class="nav-item"><a class="nav-link" href="@Url.Action("UserManagement", "Admin")">Users</a></li>
+                            <li class="nav-item"><a class="nav-link" href="@Url.Action("TicketsManagement", "Ticket")">Tickets</a></li>
+                             <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "SubscriptionManagement")">Subscriptions</a></li>
+                            <li class="nav-item"><a class="nav-link" href="@Url.Action("Manage", "Stations")">Stations</a></li>
+                            <li class="nav-item"><a class="nav-link" href="@Url.Action("ContactAdmin", "Contact")">Contacts</a></li>
+
                         }
                         else
                         {
-                            <li class="nav-item"><a class="nav-link" href="@Url.Action("Login", "Account")">Login</a></li>
+                            <li class="nav-item"><a class="nav-link" href="@Url.Action("Tickets", "Ticket")">Tickets</a></li>
+                            <li class="nav-item"><a class="nav-link" href="@Url.Action("AvailableSubscriptions", "UserSubscriptions")">Subscriptions</a></li>
+                            <li class="nav-item"><a class="nav-link" href="@Url.Action("Index", "Stations")">Stations Info</a></li>
+                            <li class="nav-item"><a class="nav-link" href="@Url.Action("SeeAlex", "Home")">Explore Alexandria</a></li>
+                            <li class="nav-item"><a class="nav-link" href="@Url.Action("Contact", "Contact")">Contact/Help</a></li>
                         }
+                               @if (User.Identity?.IsAuthenticated == true)
+                                      {
+           
+                               @if (!User.IsInRole("Admin"))
+                                     {
+                                       <li class="nav-item">  
+                                       <a class="nav-link p-0 ps-3" href="@Url.Action("Index", "Notification")">Notifications</a>
+                                        </li>
+                                       }
+
+                                      <li class="nav-item">
+                                            <a class="nav-link p-0 ps-3" href="@Url.Action("Profile", "Account")">
+                                            <img src="~/images/testimonial-2.jpg" class="rounded-circle" alt="profile logo" style="width:40px; height:40px;" />
+                                        </a>
+                                    </li>
+
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                   <button type="submit" class="nav-link btn btn-link">Logout</button>
+                                </form>
+                            </li>
+                                    }
+                                    else
+                                    {
+                                        <li class="nav-item">
+                                            <a class="nav-link" href="@Url.Action("Login", "Account")">Login</a>
+                                        </li>
+                                    }
+
                     </ul>
                 </div>
             </div>

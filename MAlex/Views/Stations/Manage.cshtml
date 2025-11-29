@@ -1,0 +1,281 @@
+﻿@model List<MAlex.Models.Station>
+
+@{
+    ViewData["Title"] = "إدارة المحطات";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] | Alexandria Metro</title>
+
+    <style>
+        :root {
+            --blue: #0077b6;
+            --light-blue: #caf0f8;
+            --orange: #ff7f50;
+            --red: #d9534f;
+            --white: #ffffff;
+            --gray: #f4f4f4;
+            --dark: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Cairo", "Poppins", sans-serif;
+            color: var(--dark);
+            position: relative;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .d-inline {
+            display: inline-block !important;
+            margin: 0;
+            padding: 0;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("../images/AlexCornish02.jpg") no-repeat center center fixed;
+            background-size: cover;
+            filter: blur(2px);
+            z-index: -1;
+        }
+
+        main {
+            padding: 40px;
+        }
+
+        h2 {
+            color: var(--blue);
+            margin-bottom: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(2px);
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 12px;
+        }
+
+        th {
+            background-color: var(--blue);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(250, 250, 250, 0.8);
+        }
+
+        .status {
+            font-weight: bold;
+        }
+
+        .active-status {
+            color: #007f00;
+        }
+
+        .closed-status {
+            color: #cc0000;
+        }
+
+        button.action-btn, a.action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            color: white;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: 0.3s;
+            margin: 2px;
+            /* هام جداً لتنسيق الأزرار داخل Flexbox */
+            height: 35px;
+            line-height: 20px;
+        }
+
+        .delete-btn {
+            background-color: var(--red);
+        }
+
+        .toggle-btn {
+            background-color: #ff7f50;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.03);
+        }
+
+        .add-station {
+            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 500px;
+            margin-right: auto;
+            margin-left: auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(3px);
+        }
+
+            .add-station h3 {
+                color: var(--blue);
+                text-align: center;
+                margin-bottom: 20px;
+                font-size: 20px;
+            }
+
+            .add-station label {
+                display: block;
+                margin: 10px 0 5px;
+                color: var(--dark);
+                font-weight: 600;
+            }
+
+            .add-station input,
+            .add-station select {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                font-family: inherit;
+            }
+
+        .save-btn {
+            background-color: var(--orange);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: 0.3s;
+            width: 100%;
+        }
+
+            .save-btn:hover {
+                opacity: 0.9;
+                transform: scale(1.03);
+            }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: rgba(0, 119, 182, 0.9);
+            color: white;
+            margin-top: 40px;
+            backdrop-filter: blur(2px);
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h2>إدارة المحطات</h2>
+
+        <table>
+            <tr>
+                <th>اسم المحطة</th>
+                <th>المنطقة</th>
+                <th>الحالة</th>
+                <th>وقت الفتح</th>
+                <th>وقت الإغلاق</th>
+                <th>الإجراءات</th>
+            </tr>
+            @foreach (var station in Model)
+            {
+                var statusText = (station.Status == "Active" ? "نشطة" : "مغلقة للصيانة");
+                var statusClass = (station.Status == "Active" ? "active-status" : "closed-status");
+                var toggleButtonText = (station.Status == "Active" ? "إغلاق للصيانة" : "إعادة التشغيل");
+
+                <tr>
+                    <td>@station.StationName</td>
+                    <td>@station.Location</td>
+                    <td class="status @statusClass">@statusText</td>
+                    <td>@station.OpeningTime.ToString(@"hh\:mm")</td>
+                    <td>@station.ClosingTime.ToString(@"hh\:mm")</td>
+
+                    <td>
+                        <div style="display: flex; justify-content: center; align-items: center;">
+
+                            <form asp-action="Delete" asp-route-id="@station.StationID" method="post"
+                                  onsubmit="return confirm('هل أنت متأكد من حذف محطة @station.StationName؟');"
+                                  class="d-inline">
+
+                                <button type="submit" class="action-btn delete-btn">حذف</button>
+                            </form>
+
+                            <a asp-action="ToggleStatus" asp-route-id="@station.StationID" class="action-btn toggle-btn">@toggleButtonText</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </table>
+
+        <div class="add-station">
+            <h3>إضافة محطة جديدة</h3>
+
+            <form asp-action="Create" method="post">
+                <label>اسم المحطة:</label>
+                <input type="text" name="StationName" placeholder="ادخل اسم المحطة" required />
+
+                <label>المنطقة:</label>
+                <input type="text" name="Location" placeholder="ادخل المنطقة" required />
+
+                <label>وقت الفتح:</label>
+                <input type="time" name="OpeningTime" required />
+
+                <label>وقت الإغلاق:</label>
+                <input type="time" name="ClosingTime" required />
+
+                <label>الحالة:</label>
+                <select name="Status">
+                    <option value="Active">نشطة</option>
+                    <option value="Inactive">مغلقة للصيانة</option>
+                </select>
+
+                <button type="submit" class="save-btn">حفظ المحطة</button>
+            </form>
+        </div>
+    </main>
+
+    <footer>
+        © 2025 لوحة تحكم مترو الإسكندرية
+    </footer>
+
+</body>
+
+</html>
